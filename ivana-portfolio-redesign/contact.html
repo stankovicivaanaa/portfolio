@@ -20,11 +20,31 @@
   <div class="card">
     <h2 class="title">Get in touch</h2>
     <p class="lead"><b>I share my CV by email request only.</b> Send me a message and I’ll reply with a copy.</p>
-    <form action="mailto:ivanastankovic01@gmail.com" method="GET">
+      <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/thanks.html">
+  <input type="hidden" name="form-name" value="contact">
+  <p style="display:none">
+    <label>Don’t fill this out: <input name="bot-field" /></label>
+  </p>
+
+  <label><b>Your email</b><br>
+    <input name="email" type="email" placeholder="you@example.com"
+           style="width:100%;padding:12px;border-radius:12px;border:1px solid #cfc6bf" required>
+  </label><br><br>
+
+  <label><b>Message</b><br>
+    <textarea name="message" rows="6" placeholder="Hello Ivana, could you please share your CV?"
+              style="width:100%;padding:12px;border-radius:12px;border:1px solid #cfc6bf" required></textarea>
+  </label><br><br>
+
+  <button class="btn primary" type="submit">Send Message</button>
+</form>
+
+
+    <!-- <form action="mailto:ivanastankovic01@gmail.com" method="GET">
       <label><b>Your email</b><br><input name="from" placeholder="you@example.com" style="width:100%;padding:12px;border-radius:12px;border:1px solid #cfc6bf"></label><br><br>
       <label><b>Message</b><br><textarea name="body" rows="6" placeholder="Hello Ivana, could you please share your CV?" style="width:100%;padding:12px;border-radius:12px;border:1px solid #cfc6bf"></textarea></label><br><br>
       <button class="btn primary" type="submit">Send Email</button>
-    </form>
+    </form> -->
   </div>
 </div>
 
