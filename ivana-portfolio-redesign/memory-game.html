@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Memory Game — Ivana</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+.wrap{max-width:960px;margin:0 auto;padding:24px}
+.panel{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:18px;border:1px solid rgba(0,0,0,.06)}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.card{position:relative;height:120px;border-radius:14px;transform-style:preserve-3d;transition:transform .35s;cursor:pointer}
+.face{position:absolute;inset:0;border-radius:14px;display:grid;place-items:center;font-size:34px;font-weight:800;backface-visibility:hidden}
+.front{background:linear-gradient(135deg,var(--peach),#fff);color:var(--terracotta)}
+.back{background:linear-gradient(135deg,var(--green),var(--terracotta));color:#fff;transform:rotateY(180deg)}
+.card.flipped{transform:rotateY(180deg)}
+.badge{padding:8px 12px;border-radius:999px;background:var(--peach);color:var(--terracotta);font-weight:700}
+.btn{appearance:none;border:none;border-radius:12px;padding:10px 14px;background:var(--green);color:#fff;font-weight:800;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--green);border:2px solid var(--green)}
+.stats{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.25)}
+.modal .box{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:20px;max-width:420px;margin:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2 class="title">Memory Game</h2>
+  <div class="panel">
+    <div class="stats">
+      <span class="badge">Moves: <span id="mv">0</span></span>
+      <span class="badge">Time: <span id="tm">0:00</span></span>
+      <button class="btn" id="rs">Restart</button>
+      <button class="btn ghost" id="sh">Shuffle</button>
+    </div>
+    <div id="bd" class="board"></div>
+  </div>
+</div>
+<div class="modal" id="win">
+  <div class="box">
+    <h3 class="title">You win! 🎉</h3>
+    <p>Finished in <b id="ft"></b> with <b id="fm"></b> moves.</p>
+    <button class="btn" id="again">Play again</button>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const emojis=['🌿','🌸','🌙','⭐','🌞','🍀','🧩','💎'];
+  let deck=[], first=null,second=null,lock=false,moves=0,matched=0,sec=0,timer=null;
+  const bd=document.getElementById('bd'), mv=document.getElementById('mv'), tm=document.getElementById('tm'),
+        win=document.getElementById('win'), ft=document.getElementById('ft'), fm=document.getElementById('fm');
+
+  function fmt(s){const m=Math.floor(s/60),r=s%60;return m+':'+String(r).padStart(2,'0');}
+  function start(){ if(timer) return; timer=setInterval(()=>{sec++; tm.textContent=fmt(sec);},1000); }
+  function stop(){ clearInterval(timer); timer=null; }
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+  function build(){ deck=[...emojis,...emojis].map((v,i)=>({id:i,val:v,matched:false})); shuffle(deck); }
+  function render(){
+    bd.innerHTML='';
+    deck.forEach(c=>{
+      const el=document.createElement('div'); el.className='card'; el.dataset.id=c.id;
+      el.innerHTML=`<div class="face front">?</div><div class="face back">${c.val}</div>`;
+      bd.appendChild(el);
+    });
+  }
+  function flip(el){
+    if(lock) return;
+    const id=+el.dataset.id, c=deck.find(x=>x.id===id);
+    if(!c || c.matched) return;
+    if(el.classList.contains('flipped')) return;
+    el.classList.add('flipped'); start();
+    if(!first){ first={el,c}; return; }
+    if(!second){ second={el,c}; moves++; mv.textContent=moves; }
+    lock=true;
+    if(first.c.val===second.c.val){
+      first.c.matched=second.c.matched=true;
+      matched++;
+      setTimeout(()=>{ resetPick(); if(matched===emojis.length){ stop(); ft.textContent=fmt(sec); fm.textContent=moves; win.style.display='grid'; } }, 250);
+    } else {
+      setTimeout(()=>{ first.el.classList.remove('flipped'); second.el.classList.remove('flipped'); resetPick(); }, 650);
+    }
+  }
+  function resetPick(){ [first,second,lock]=[null,null,false]; }
+  function restart(){ stop(); sec=0; tm.textContent='0:00'; moves=0; mv.textContent='0'; matched=0; build(); render(); win.style.display='none'; }
+  bd.addEventListener('click', e=>{ const el=e.target.closest('.card'); if(el) flip(el); });
+  document.getElementById('rs').onclick=restart;
+  document.getElementById('sh').onclick=()=>{ shuffle(deck); render(); };
+  document.getElementById('again').onclick=restart;
+  restart();
+});
+</script>
+</body>
+</html>

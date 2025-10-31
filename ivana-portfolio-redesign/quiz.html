@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quiz — Categories + Random All</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>.wrap{max-width:780px;margin:0 auto;padding:24px}.answers{display:grid;gap:10px;margin-top:10px}.btn{appearance:none;border:none;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--green);color:#fff}.btn.alt{background:transparent;border:2px solid var(--green);color:var(--green)}.card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;box-shadow:var(--shadow);padding:18px}.muted{color:#6f6661}</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 style="font-family:var(--font-serif);color:var(--terracotta)">Quiz</h1>
+  <div class="card" id="stage"></div>
+</div>
+<script>
+(function(){
+  const BANK=[
+    {t:"What is 2 + 2?", o:["3","4","5","6"], c:1, cat:"Math"},
+    {t:"What is 8 x 7?", o:["58","60","56","70"], c:2, cat:"Math"},
+    {t:"What is the square root of 81?", o:["7","8","9","10"], c:2, cat:"Math"},
+    {t:"What is 15 + 6/3?", o:["17","19","21","22"], c:0, cat:"Math"},
+    {t:"What is the capital of Canada?", o:["Toronto","Vancouver","Ottawa","Montreal"], c:2, cat:"Geography"},
+    {t:"Mount Everest is located in which country?", o:["India","Nepal","China","Bhutan"], c:1, cat:"Geography"},
+    {t:"Which ocean is the largest?", o:["Atlantic","Indian","Pacific","Arctic"], c:2, cat:"Geography"},
+    {t:"What is the capital of Serbia?", o:["Zagreb","Skopje","Sofia","Belgrade"], c:3, cat:"Geography"},
+    {t:"What gas do plants absorb from the atmosphere?", o:["Oxygen","Carbon Dioxide","Nitrogen","Hydrogen"], c:1, cat:"Science"},
+    {t:"What is H2O commonly known as?", o:["Salt","Oxygen","Water","Hydrogen"], c:2, cat:"Science"},
+    {t:"What organ pumps blood through the body?", o:["Lungs","Liver","Brain","Heart"], c:3, cat:"Science"},
+    {t:"Which planet is known as the Red Planet?", o:["Mars","Jupiter","Saturn","Mercury"], c:0, cat:"Science"},
+    {t:"Who wrote \"Romeo and Juliet\"?", o:["Charles Dickens","Jane Austen","William Shakespeare","Leo Tolstoy"], c:2, cat:"General Knowledge"},
+    {t:"How many continents are there on Earth?", o:["5","6","7","8"], c:2, cat:"General Knowledge"},
+    {t:"Which year did World War II start?", o:["1938","1939","1940","1941"], c:1, cat:"General Knowledge"},
+    {t:"At what temperature does water boil?", o:["99°C","100°C","101°C","102°C"], c:1, cat:"General Knowledge"},
+  ];
+  const $=s=>document.querySelector(s); const stage=$("#stage");
+  const cats=Array.from(new Set(BANK.map(q=>q.cat))).sort();
+  function shuffle(a){a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a;}
+  function start(){ stage.innerHTML='<h2 style="margin:0 0 8px">Choose a category</h2><p class="muted">ALL gives you 5 unique random questions.</p><div id="row"></div>'; const row=document.getElementById('row'); row.style.display='flex'; row.style.flexWrap='wrap'; row.style.gap='8px';
+    cats.forEach(c=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=c; b.onclick=()=>play(c); row.appendChild(b); });
+    const all=document.createElement('button'); all.className='btn alt'; all.textContent='All Categories (Random 5)'; all.onclick=()=>play('ALL'); row.appendChild(all);
+  }
+  function play(cat){
+    let set=(cat==='ALL')? shuffle(BANK).slice(0,5) : shuffle(BANK.filter(q=>q.cat===cat));
+    let i=0, score=0;
+    function render(){
+      if(i>=set.length){ stage.innerHTML=`<h2>Finished!</h2><p>You scored <b>${score}</b> / <b>${set.length}</b>.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="again">Play again</button><button class="btn alt" id="back">Pick another category</button></div>`;
+        document.getElementById('again').onclick=()=>{ set=shuffle(set); i=0; score=0; render(); };
+        document.getElementById('back').onclick=start; return; }
+      const q=set[i]; const opts=q.o.map((op,idx)=>`<button class="btn" data-idx="${idx}">${idx+1}. ${op}</button>`).join('');
+      stage.innerHTML=`<h2 style="margin:0 0 8px">${cat==='ALL'?'All Categories':cat}</h2><p class="muted"><b>Q${i+1} of ${set.length}</b></p><div class="card"><div><b>${q.t}</b></div><div class="answers" id="ans">${opts}</div><p class="muted" id="status"></p></div>`;
+      document.getElementById('ans').onclick=e=>{ const b=e.target.closest('button[data-idx]'); if(!b) return; const a=+b.dataset.idx; if(a===q.c){ score++; document.getElementById('status').textContent='Correct!'; } else { document.getElementById('status').textContent='Wrong! Correct: '+q.o[q.c]; } setTimeout(()=>{ i++; render(); }, 450); };
+    }
+    render();
+  }
+  start();
+})();
+</script>
+</body>
+</html>
